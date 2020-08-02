@@ -27,19 +27,4 @@ On Pieces add the sprites for the pieces. They should have the cell size of Slid
 
 On Goals add the sprites for the goals. Also should have the same cell size and be aligned.
 
-SlidePuzzle
-|
--Pieces
- |
- |-Blue
-   |-Pieces
-     |-BlueSprite
-   |-Goals
-     |-BlueSpriteGoal
- |-Red
-   |-Pieces
-     |-RedSprite
-   |-Goals
-     |-RedSpriteGoal
-
 
