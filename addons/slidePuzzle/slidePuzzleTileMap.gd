@@ -47,7 +47,7 @@ func _ready():
 		all_pieces += pieces_node.get_node("Pieces").get_children()
 	last_count = solved_count
 	
-	if $Carriers:
+	if has_node("Carriers"):
 		all_carriers = $Carriers.get_children()
 	else:
 		all_carriers = []
@@ -148,10 +148,11 @@ func _test_if_destination_is_allowed(piece, destination) -> bool:
 	var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
 	
 	var piece_path: TileMap = null
-	if "Carrier" in piece.name:
-		piece_path = $CarriersPath
-	else:
-		piece_path = piece.get_parent().get_parent().get_node("Path")
+	if has_node("CarriersPath"):
+		if "Carrier" in piece.name:
+			piece_path = $CarriersPath
+		else:
+			piece_path = piece.get_parent().get_parent().get_node("Path")
 
 	if dont_allow_move(piece, piece_path, new_position.x / cell_size.x, new_position.y / cell_size.y):
 		return false
@@ -227,6 +228,7 @@ func _update_on_move(piece, path):
 	emit_signal("piece_moved", piece)
 
 func _input(event: InputEvent) -> void:
+	var is_second = puzzle_name == "Second"
 	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
 		var click_pos: Vector2 = pos_to_tile_pos(event.position)
 		
@@ -242,6 +244,8 @@ func _input(event: InputEvent) -> void:
 				closest_piece = piece
 				closest_piece_distance = click_pos.distance_squared_to(piece.get_meta("real_position"))
 		if closest_piece_distance < pow(drag_area_radius_multiplier * 2 * cell_size.x, 2):
+			if is_second:
+				print("Start dragging" + closest_piece.name)
 			dragging = closest_piece
 			return
 		
@@ -252,7 +256,6 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and event.button_mask & BUTTON_LEFT == BUTTON_LEFT:
 		if dragging == null:
 			return
-		
 		var new_position = pos_to_tile_pos(event.position)
 		var new_tile = Vector2(new_position.x / cell_size.x, new_position.y / cell_size.y)
 		var old_position = pos_to_tile_pos(dragging.get_meta("real_position"))
@@ -275,6 +278,7 @@ func _input(event: InputEvent) -> void:
 			dragging_candidate = all_carried[dragging.name]
 		else:
 			dragging_candidate = dragging
+		
 		
 		#TEST all tiles in a range and use closest
 		var closest_possible_position = event.position
