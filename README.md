@@ -9,22 +9,8 @@ You can have many pieces that work on many goals or a goal for eac piece.
 
 ## How to use it
 
-Add a new SlidePuzzle component.
+This repo is also an interactive slide presentation that you can open on godot!
 
-SlidePuzzle is a TileMap, it will be the path on which all pieces are allowed to slide.
-
-Create a tileset for it and set the cell size.
-
-Add a child node Node and name it Pieces.
-
-For each piece type add a child node. 
-
-So for example if you have a red piece and a blue piece you would add a Node Blue and a node Red.
-
-Inside each piece node you also need two nodes Pieces and Goals
-
-On Pieces add the sprites for the pieces. They should have the cell size of SlidePuzzle and should be aligned with the grid.
-
-On Goals add the sprites for the goals. Also should have the same cell size and be aligned.
-
-
+![slide1](https://github.com/beothorn/slidePuzzle/blob/master/imgs/slide1.png)
+![slide2](https://github.com/beothorn/slidePuzzle/blob/master/imgs/slide2.png)
+![slide3](https://github.com/beothorn/slidePuzzle/blob/master/imgs/slide3.png)
