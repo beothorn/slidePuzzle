@@ -228,9 +228,9 @@ func _update_on_move(piece, path):
 	emit_signal("piece_moved", piece)
 
 func _input(event: InputEvent) -> void:
-	var is_second = puzzle_name == "Second"
+	var mouse_pos = get_global_mouse_position()
 	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
-		var click_pos: Vector2 = pos_to_tile_pos(event.position)
+		var click_pos: Vector2 = pos_to_tile_pos(mouse_pos)
 		
 		for c in all_carriers:
 			if click_pos == pos_to_tile_pos(c.get_meta("real_position")):
@@ -244,8 +244,6 @@ func _input(event: InputEvent) -> void:
 				closest_piece = piece
 				closest_piece_distance = click_pos.distance_squared_to(piece.get_meta("real_position"))
 		if closest_piece_distance < pow(drag_area_radius_multiplier * 2 * cell_size.x, 2):
-			if is_second:
-				print("Start dragging" + closest_piece.name)
 			dragging = closest_piece
 			return
 		
@@ -256,7 +254,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and event.button_mask & BUTTON_LEFT == BUTTON_LEFT:
 		if dragging == null:
 			return
-		var new_position = pos_to_tile_pos(event.position)
+		var new_position = pos_to_tile_pos(mouse_pos)
 		var new_tile = Vector2(new_position.x / cell_size.x, new_position.y / cell_size.y)
 		var old_position = pos_to_tile_pos(dragging.get_meta("real_position"))
 		var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
@@ -270,8 +268,8 @@ func _input(event: InputEvent) -> void:
 		var dragging_candidate = dragging
 		
 		if is_carrier:#Carrier needs to fail to find a destination so piece inside can be dragged
-			if _test_if_destination_is_allowed(dragging, event.position):
-				move_piece_to(dragging, event.position)
+			if _test_if_destination_is_allowed(dragging, mouse_pos):
+				move_piece_to(dragging, mouse_pos)
 				return
 			if not dragging.name in all_carried:
 				return
@@ -281,7 +279,7 @@ func _input(event: InputEvent) -> void:
 		
 		
 		#TEST all tiles in a range and use closest
-		var closest_possible_position = event.position
+		var closest_possible_position = mouse_pos
 		var possible_positions = []
 		var drag_area_radius = cell_size.x * drag_area_radius_multiplier
 		for maybe_x in range(new_position.x - drag_area_radius, new_position.x + drag_area_radius, cell_size.x):
@@ -297,8 +295,8 @@ func _input(event: InputEvent) -> void:
 		
 		var current_distance = 999999999999
 		for p in possible_positions:
-			if p.distance_squared_to(event.position) < current_distance:
-				current_distance = p.distance_squared_to(event.position)
+			if p.distance_squared_to(mouse_pos) < current_distance:
+				current_distance = p.distance_squared_to(mouse_pos)
 				closest_possible_position = p
 		
 		var new_closest_position = pos_to_tile_pos(closest_possible_position)
