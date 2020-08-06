@@ -2,6 +2,7 @@ extends TileMap
 
 class_name SlidePuzzle
 
+signal on_piece_ready
 signal piece_moved
 signal piece_entered_goal
 signal puzzle_solved
@@ -40,7 +41,7 @@ func _ready():
 		if pieces.size() != goals.size():
 			_fail_and_quit("Puzzle unsolvable for "+ pieces_node.name + " pieces: "+str(pieces.size())+" goals: "+str(goals.size()))
 		for piece in pieces:
-			_update_on_move(piece, null)
+			emit_signal("on_piece_ready", piece)
 			for goal in goals:
 				if piece.get_meta("real_position") == goal.position:
 					solved_count = solved_count + 1
@@ -61,14 +62,6 @@ func _ready():
 	tween = Tween.new()
 	add_child(tween)
 	tween.connect("tween_completed", self, "_update_on_move")
-	
-	if OS.is_debug_build():
-		var button1: Button = Button.new()
-		button1.name = "Solver"
-		button1.text = "Solve"
-		add_child(button1)
-		button1.show()
-		button1.connect("button_down", self, "set_as_solved")
 
 func _fail_and_quit(msg: String):
 	print(msg)
@@ -225,7 +218,8 @@ func move_piece_to(piece, destination):
 		_signal_if_solved()
 
 func _update_on_move(piece, path):
-	emit_signal("piece_moved", piece)
+	var new_tile_pos = tile_pos_to_tile_index(pos_to_tile_pos(piece.position))
+	emit_signal("piece_moved", piece, new_tile_pos)
 
 func _input(event: InputEvent) -> void:
 	var mouse_pos = get_global_mouse_position()
