@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=26 format=2]
 
 [ext_resource path="res://addons/slidePuzzle/slidePuzzleTileMap.gd" type="Script" id=1]
 [ext_resource path="res://assets/SlidePuzzleTileset.tres" type="TileSet" id=2]
@@ -17,6 +17,9 @@
 [ext_resource path="res://Slide4.gd" type="Script" id=15]
 [ext_resource path="res://assets/listenToPiecesMoving.png" type="Texture" id=16]
 [ext_resource path="res://assets/twoPathsExample.png" type="Texture" id=17]
+[ext_resource path="res://assets/pieceCarrier.png" type="Texture" id=18]
+[ext_resource path="res://assets/carriersPath.png" type="Texture" id=19]
+[ext_resource path="res://assets/nodeStructureForCarriers.png" type="Texture" id=20]
 
 [sub_resource type="DynamicFont" id=1]
 size = 64
@@ -64,6 +67,18 @@ font_data = ExtResource( 6 )
 size = 24
 outline_size = 1
 font_data = ExtResource( 6 )
+
+[sub_resource type="TileSet" id=5]
+0/name = "carriersPath"
+0/texture = ExtResource( 19 )
+0/tex_offset = Vector2( 0, 0 )
+0/modulate = Color( 1, 1, 1, 1 )
+0/region = Rect2( 0, 0, 64, 64 )
+0/tile_mode = 0
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shapes = [  ]
+0/z_index = 0
 
 [node name="SlidePuzzleDemo" type="Node2D"]
 script = ExtResource( 5 )
@@ -451,7 +466,7 @@ texture = ExtResource( 16 )
 margin_left = 4160.0
 margin_top = 64.0
 margin_right = 5056.0
-margin_bottom = 192.0
+margin_bottom = 128.0
 custom_fonts/normal_font = SubResource( 3 )
 text = "   You can also have paths that are exclusive to a single piece type. For this just add a TileMap as a child of the Piece type node and name it \"Path\"."
 __meta__ = {
@@ -470,7 +485,7 @@ script = ExtResource( 1 )
 
 [node name="Pieces" type="Node" parent="Slide5/SlidePuzzle/Pieces/Blue"]
 
-[node name="BluePiece2" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Blue/Pieces"]
+[node name="BluePiece" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Blue/Pieces"]
 position = Vector2( 4416, 128 )
 z_index = 1
 texture = ExtResource( 3 )
@@ -478,7 +493,7 @@ centered = false
 
 [node name="Goals" type="Node" parent="Slide5/SlidePuzzle/Pieces/Blue"]
 
-[node name="BlueGoal2" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Blue/Goals"]
+[node name="BlueGoal" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Blue/Goals"]
 position = Vector2( 4544, 512 )
 texture = ExtResource( 4 )
 centered = false
@@ -493,7 +508,7 @@ tile_data = PoolIntArray( 393285, 1, 0, 393286, 1, 0, 393287, 1, 0, 458821, 1, 0
 
 [node name="Pieces" type="Node" parent="Slide5/SlidePuzzle/Pieces/Red"]
 
-[node name="RedPiece2" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Red/Pieces"]
+[node name="RedPiece" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Red/Pieces"]
 position = Vector2( 4800, 128 )
 z_index = 1
 texture = ExtResource( 10 )
@@ -501,7 +516,7 @@ centered = false
 
 [node name="Goals" type="Node" parent="Slide5/SlidePuzzle/Pieces/Red"]
 
-[node name="RedGoal2" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Red/Goals"]
+[node name="RedGoal" type="Sprite" parent="Slide5/SlidePuzzle/Pieces/Red/Goals"]
 position = Vector2( 4672, 512 )
 texture = ExtResource( 11 )
 centered = false
@@ -512,10 +527,65 @@ tile_set = ExtResource( 2 )
 format = 1
 tile_data = PoolIntArray( 393289, 2, 0, 393290, 2, 0, 393291, 2, 0, 458827, 2, 0, 524361, 2, 0, 524362, 2, 0, 524363, 2, 0 )
 
-[node name="Sprite" type="Sprite" parent="Slide5"]
+[node name="GodotNodeStructurePicture" type="Sprite" parent="Slide5"]
 position = Vector2( 4275.37, 352.421 )
 scale = Vector2( 0.8, 0.8 )
 texture = ExtResource( 17 )
+
+[node name="Slide6" type="Node" parent="."]
+
+[node name="Slide6Text" type="RichTextLabel" parent="Slide6"]
+margin_left = 5184.0
+margin_top = 64.0
+margin_right = 5888.0
+margin_bottom = 256.0
+custom_fonts/normal_font = SubResource( 3 )
+text = "   There is a special type of piece called \"Carrier\". The carrier have its own path and it can carry a piece with it. To add one you need a node called \"Carriers\" where the carriers sprites will be and a Tilemap called CarriersPath.
+Try dragging the carrier near the blue piece and then drag the blue piece inside the carrier. Then drag the carrier to the right part of the path and drag the blue piece to the goal."
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SlidePuzzle" type="TileMap" parent="Slide6"]
+tile_set = ExtResource( 2 )
+format = 1
+tile_data = PoolIntArray( 327761, 0, 0, 327771, 0, 0, 393297, 0, 0, 393307, 0, 0 )
+script = ExtResource( 1 )
+
+[node name="Carriers" type="Node" parent="Slide6/SlidePuzzle"]
+
+[node name="Carrier" type="Sprite" parent="Slide6/SlidePuzzle/Carriers"]
+position = Vector2( 5504, 448 )
+texture = ExtResource( 18 )
+centered = false
+
+[node name="Pieces" type="Node" parent="Slide6/SlidePuzzle"]
+
+[node name="Blue" type="Node" parent="Slide6/SlidePuzzle/Pieces"]
+
+[node name="Pieces" type="Node" parent="Slide6/SlidePuzzle/Pieces/Blue"]
+
+[node name="BluePiece" type="Sprite" parent="Slide6/SlidePuzzle/Pieces/Blue/Pieces"]
+position = Vector2( 5184, 320 )
+z_index = 1
+texture = ExtResource( 3 )
+centered = false
+
+[node name="Goals" type="Node" parent="Slide6/SlidePuzzle/Pieces/Blue"]
+
+[node name="BlueGoal" type="Sprite" parent="Slide6/SlidePuzzle/Pieces/Blue/Goals"]
+position = Vector2( 5824, 320 )
+texture = ExtResource( 4 )
+centered = false
+
+[node name="CarriersPath" type="TileMap" parent="Slide6/SlidePuzzle"]
+tile_set = SubResource( 5 )
+format = 1
+tile_data = PoolIntArray( 458833, 0, 0, 458834, 0, 0, 458835, 0, 0, 458836, 0, 0, 458837, 0, 0, 458838, 0, 0, 458839, 0, 0, 458840, 0, 0, 458841, 0, 0, 458842, 0, 0, 458843, 0, 0 )
+
+[node name="Sprite" type="Sprite" parent="Slide6"]
+position = Vector2( 6016, 256 )
+texture = ExtResource( 20 )
 [connection signal="button_down" from="CanvasLayer/nextSlide" to="." method="_on_nextSlide_button_down"]
 [connection signal="button_down" from="CanvasLayer/previousSlide" to="." method="_on_previousSlide_button_down"]
 [connection signal="puzzle_solved" from="Slide1/FirstExample" to="." method="_on_puzzle_solved"]
@@ -526,3 +596,4 @@ texture = ExtResource( 17 )
 [connection signal="piece_moved" from="Slide4/SlidePuzzle" to="Slide4" method="_on_SlidePuzzle_piece_moved"]
 [connection signal="puzzle_solved" from="Slide4/SlidePuzzle" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide5/SlidePuzzle" to="." method="_on_puzzle_solved"]
+[connection signal="puzzle_solved" from="Slide6/SlidePuzzle" to="." method="_on_puzzle_solved"]
