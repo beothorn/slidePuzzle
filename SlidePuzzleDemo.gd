@@ -1,10 +1,8 @@
 extends Node2D
 
-
 func _on_puzzle_solved(puzzle_name: String) -> void:
 	$CanvasLayer/PuzzleSolved.visible = true
 	$CanvasLayer/PuzzleSolved/Player.play("Solved")
-
 
 func _on_nextSlide_button_down():
 	var new_x_position = $Background.position.x + 1024

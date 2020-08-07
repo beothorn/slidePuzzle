@@ -141,11 +141,10 @@ func _test_if_destination_is_allowed(piece, destination) -> bool:
 	var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
 	
 	var piece_path: TileMap = null
-	if has_node("CarriersPath"):
-		if "Carrier" in piece.name:
-			piece_path = $CarriersPath
-		else:
-			piece_path = piece.get_parent().get_parent().get_node("Path")
+	if "Carrier" in piece.name:
+		piece_path = $CarriersPath
+	else:
+		piece_path = piece.get_parent().get_parent().get_node("Path")
 
 	if dont_allow_move(piece, piece_path, new_position.x / cell_size.x, new_position.y / cell_size.y):
 		return false
