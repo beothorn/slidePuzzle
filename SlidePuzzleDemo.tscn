@@ -443,6 +443,27 @@ centered = false
 position = Vector2( 3776, 512 )
 scale = Vector2( 0.5, 0.5 )
 texture = ExtResource( 16 )
+
+[node name="Slide5" type="Node" parent="."]
+
+[node name="SlidePuzzle" type="TileMap" parent="Slide5"]
+tile_set = ExtResource( 2 )
+format = 1
+script = ExtResource( 1 )
+
+[node name="Pieces" type="Node" parent="Slide5/SlidePuzzle"]
+
+[node name="Blue" type="Node" parent="Slide5/SlidePuzzle/Pieces"]
+
+[node name="Pieces" type="Node" parent="Slide5/SlidePuzzle/Pieces/Blue"]
+
+[node name="Goals" type="Node" parent="Slide5/SlidePuzzle/Pieces/Blue"]
+
+[node name="Red" type="Node" parent="Slide5/SlidePuzzle/Pieces"]
+
+[node name="Pieces" type="Node" parent="Slide5/SlidePuzzle/Pieces/Red"]
+
+[node name="Goals" type="Node" parent="Slide5/SlidePuzzle/Pieces/Red"]
 [connection signal="button_down" from="CanvasLayer/nextSlide" to="." method="_on_nextSlide_button_down"]
 [connection signal="button_down" from="CanvasLayer/previousSlide" to="." method="_on_previousSlide_button_down"]
 [connection signal="puzzle_solved" from="Slide1/FirstExample" to="." method="_on_puzzle_solved"]
