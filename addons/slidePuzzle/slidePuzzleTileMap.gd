@@ -7,9 +7,12 @@ signal piece_moved
 signal piece_entered_goal
 signal puzzle_solved
 
+
+export(GDScript) var allow_tiles_script
 export var puzzle_name: String = "SomePuzzle"
 export var drag_area_radius_multiplier = 1.8
 export var drag_duration = 0.05
+
 
 var dragging : Sprite = null
 
@@ -134,48 +137,55 @@ func dont_allow_move(piece: Sprite, piece_path: TileMap, tile_x: int, tile_y: in
 	
 	return no_piece_path and no_free_path and is_not_carrier
 
+func _test_if_path_on_x_axis_is_clear(piece, piece_path, old_tile, new_tile) -> bool:
+	for i in range(min(old_tile.x, new_tile.x), max(old_tile.x, new_tile.x)):
+		var test_position = Vector2(i * cell_size.x, old_tile.y * cell_size.y)
+		if _position_is_occupied(piece, test_position):
+			return false
+		if dont_allow_move(piece, piece_path, i, old_tile.y):
+			return false
+	return true
+
+func _test_if_path_on_y_axis_is_clear(piece, piece_path, old_tile, new_tile) -> bool:
+	for i in range(min(old_tile.y, new_tile.y), max(old_tile.y, new_tile.y)):
+		var test_position = Vector2(old_tile.x * cell_size.x, i * cell_size.y)
+		if _position_is_occupied(piece, test_position):
+			return false
+		if dont_allow_move(piece, piece_path, old_tile.x, i):
+			return false
+	return true
+
 func _test_if_destination_is_allowed(piece, destination) -> bool:
 	var new_position = pos_to_tile_pos(destination)
 	var new_tile = Vector2(new_position.x / cell_size.x, new_position.y / cell_size.y)
 	var old_position = pos_to_tile_pos(piece.get_meta("real_position"))
 	var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
 	
+	if allow_tiles_script != null:
+		if not allow_tiles_script.move_is_allowed(piece, destination):
+			return false
+	
 	var piece_path: TileMap = null
 	if "Carrier" in piece.name:
-		piece_path = $CarriersPath
+		if has_node("CarriersPath"):
+			piece_path = $CarriersPath
 	else:
 		piece_path = piece.get_parent().get_parent().get_node("Path")
 
-	if dont_allow_move(piece, piece_path, new_position.x / cell_size.x, new_position.y / cell_size.y):
+	var destination_tile_is_not_allowed = dont_allow_move(piece, piece_path, new_position.x / cell_size.x, new_position.y / cell_size.y)
+	if destination_tile_is_not_allowed:
 		return false
 	
 	if _position_is_occupied(piece, new_position):
 		return false
 	
-	var allow_move_x = true
-	if old_tile.x != new_tile.x and old_tile.y == new_tile.y:
-		for i in range(min(old_tile.x, new_tile.x), max(old_tile.x, new_tile.x)):
-			var test_position = Vector2(i * cell_size.x, old_tile.y * cell_size.y)
-			if _position_is_occupied(piece, test_position):
-				allow_move_x = false
-				break
-			if dont_allow_move(piece, piece_path, i, old_tile.y):
-				allow_move_x = false
-				break
-		return allow_move_x
-	
-	var allow_move_y = true
-	if old_tile.y != new_tile.y and old_tile.x == new_tile.x:
-		for i in range(min(old_tile.y, new_tile.y), max(old_tile.y, new_tile.y)):
-			var test_position = Vector2(old_tile.x * cell_size.x, i * cell_size.y)
-			if _position_is_occupied(piece, test_position):
-				allow_move_y = false
-				#print("Occupied line y")
-				break
-			if dont_allow_move(piece, piece_path, old_tile.x, i):
-				allow_move_y = false
-				break
-		return allow_move_y
+	var is_moving_over_the_x_axis = old_tile.x != new_tile.x and old_tile.y == new_tile.y
+	if is_moving_over_the_x_axis and _test_if_path_on_x_axis_is_clear(piece, piece_path, old_tile, new_tile):
+		return true
+		
+	var is_moving_over_the_y_axis = old_tile.y != new_tile.y and old_tile.x == new_tile.x
+	if is_moving_over_the_y_axis and _test_if_path_on_x_axis_is_clear(piece, piece_path, old_tile, new_tile):
+		return true
 	
 	return false
 

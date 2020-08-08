@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://addons/slidePuzzle/slidePuzzleTileMap.gd" type="Script" id=1]
 [ext_resource path="res://assets/SlidePuzzleTileset.tres" type="TileSet" id=2]
@@ -18,8 +18,10 @@
 [ext_resource path="res://assets/listenToPiecesMoving.png" type="Texture" id=16]
 [ext_resource path="res://assets/twoPathsExample.png" type="Texture" id=17]
 [ext_resource path="res://assets/pieceCarrier.png" type="Texture" id=18]
-[ext_resource path="res://assets/carriersPath.png" type="Texture" id=19]
+[ext_resource path="res://assets/CarriersTileset.tres" type="TileSet" id=19]
 [ext_resource path="res://assets/nodeStructureForCarriers.png" type="Texture" id=20]
+[ext_resource path="res://assets/bluePieceHorizontalArrow.png" type="Texture" id=21]
+[ext_resource path="res://src/allow_horizontal_move_only.gd" type="Script" id=22]
 
 [sub_resource type="DynamicFont" id=1]
 size = 64
@@ -67,18 +69,6 @@ font_data = ExtResource( 6 )
 size = 24
 outline_size = 1
 font_data = ExtResource( 6 )
-
-[sub_resource type="TileSet" id=5]
-0/name = "carriersPath"
-0/texture = ExtResource( 19 )
-0/tex_offset = Vector2( 0, 0 )
-0/modulate = Color( 1, 1, 1, 1 )
-0/region = Rect2( 0, 0, 64, 64 )
-0/tile_mode = 0
-0/occluder_offset = Vector2( 0, 0 )
-0/navigation_offset = Vector2( 0, 0 )
-0/shapes = [  ]
-0/z_index = 0
 
 [node name="SlidePuzzleDemo" type="Node2D"]
 script = ExtResource( 5 )
@@ -158,7 +148,10 @@ puzzle_name = "First"
 
 [node name="Pieces" type="Node" parent="Slide1/FirstExample/Pieces/Blue"]
 
-[node name="BluePiece1" type="Sprite" parent="Slide1/FirstExample/Pieces/Blue/Pieces"]
+[node name="BluePiece1" type="Sprite" parent="Slide1/FirstExample/Pieces/Blue/Pieces" groups=[
+"sp_blue",
+"sp_piece",
+]]
 position = Vector2( 64, 512 )
 z_index = 1
 texture = ExtResource( 3 )
@@ -166,33 +159,10 @@ centered = false
 
 [node name="Goals" type="Node" parent="Slide1/FirstExample/Pieces/Blue"]
 
-[node name="BlueGoal" type="Sprite" parent="Slide1/FirstExample/Pieces/Blue/Goals"]
-position = Vector2( 896, 512 )
-texture = ExtResource( 4 )
-centered = false
-
-[node name="FirstExample2" type="TileMap" parent="Slide1"]
-tile_set = ExtResource( 2 )
-format = 1
-tile_data = PoolIntArray( 524289, 0, 0, 524290, 0, 0, 524291, 0, 0, 524292, 0, 0, 524293, 0, 0, 524294, 0, 0, 524295, 0, 0, 524296, 0, 0, 524297, 0, 0, 524298, 0, 0, 524299, 0, 0, 524300, 0, 0, 524301, 0, 0, 524302, 0, 0 )
-script = ExtResource( 1 )
-puzzle_name = "First"
-
-[node name="Pieces" type="Node" parent="Slide1/FirstExample2"]
-
-[node name="Blue" type="Node" parent="Slide1/FirstExample2/Pieces"]
-
-[node name="Pieces" type="Node" parent="Slide1/FirstExample2/Pieces/Blue"]
-
-[node name="BluePiece1" type="Sprite" parent="Slide1/FirstExample2/Pieces/Blue/Pieces"]
-position = Vector2( 64, 512 )
-z_index = 1
-texture = ExtResource( 3 )
-centered = false
-
-[node name="Goals" type="Node" parent="Slide1/FirstExample2/Pieces/Blue"]
-
-[node name="BlueGoal" type="Sprite" parent="Slide1/FirstExample2/Pieces/Blue/Goals"]
+[node name="BlueGoal" type="Sprite" parent="Slide1/FirstExample/Pieces/Blue/Goals" groups=[
+"spclass_blue",
+"sptype_goal",
+]]
 position = Vector2( 896, 512 )
 texture = ExtResource( 4 )
 centered = false
@@ -579,21 +549,60 @@ texture = ExtResource( 4 )
 centered = false
 
 [node name="CarriersPath" type="TileMap" parent="Slide6/SlidePuzzle"]
-tile_set = SubResource( 5 )
+tile_set = ExtResource( 19 )
 format = 1
 tile_data = PoolIntArray( 458833, 0, 0, 458834, 0, 0, 458835, 0, 0, 458836, 0, 0, 458837, 0, 0, 458838, 0, 0, 458839, 0, 0, 458840, 0, 0, 458841, 0, 0, 458842, 0, 0, 458843, 0, 0 )
 
 [node name="Sprite" type="Sprite" parent="Slide6"]
 position = Vector2( 6016, 256 )
 texture = ExtResource( 20 )
+
+[node name="Slide7" type="Node" parent="."]
+
+[node name="SlidePuzzle" type="TileMap" parent="Slide7"]
+tile_set = ExtResource( 2 )
+format = 1
+tile_data = PoolIntArray( 327781, 0, 0, 327782, 0, 0, 327783, 0, 0, 327784, 0, 0, 327785, 0, 0, 327786, 0, 0, 393317, 0, 0, 393318, 0, 0, 393319, 0, 0, 393320, 0, 0, 393321, 0, 0, 393322, 0, 0 )
+script = ExtResource( 1 )
+allow_tiles_script = ExtResource( 22 )
+
+[node name="Pieces" type="Node" parent="Slide7/SlidePuzzle"]
+
+[node name="Blue" type="Node" parent="Slide7/SlidePuzzle/Pieces"]
+
+[node name="Pieces" type="Node" parent="Slide7/SlidePuzzle/Pieces/Blue"]
+
+[node name="BluePiece" type="Sprite" parent="Slide7/SlidePuzzle/Pieces/Blue/Pieces"]
+position = Vector2( 6784, 320 )
+z_index = 2
+texture = ExtResource( 21 )
+centered = false
+
+[node name="Goals" type="Node" parent="Slide7/SlidePuzzle/Pieces/Blue"]
+
+[node name="BlueGoal" type="Sprite" parent="Slide7/SlidePuzzle/Pieces/Blue/Goals"]
+position = Vector2( 6784, 384 )
+texture = ExtResource( 4 )
+centered = false
+
+[node name="Carriers" type="Node" parent="Slide7/SlidePuzzle"]
+
+[node name="Carrier" type="Sprite" parent="Slide7/SlidePuzzle/Carriers"]
+position = Vector2( 6400, 384 )
+texture = ExtResource( 18 )
+centered = false
+
+[node name="CarriersPath" type="TileMap" parent="Slide7/SlidePuzzle"]
+tile_set = ExtResource( 19 )
+format = 1
+tile_data = PoolIntArray( 196707, 0, 0, 196708, 0, 0, 196709, 0, 0, 196710, 0, 0, 196711, 0, 0, 196712, 0, 0, 196713, 0, 0, 196714, 0, 0, 196715, 0, 0, 262243, 0, 0, 262251, 0, 0, 327779, 0, 0, 327787, 0, 0, 393315, 0, 0, 393316, 0, 0 )
 [connection signal="button_down" from="CanvasLayer/nextSlide" to="." method="_on_nextSlide_button_down"]
 [connection signal="button_down" from="CanvasLayer/previousSlide" to="." method="_on_previousSlide_button_down"]
 [connection signal="puzzle_solved" from="Slide1/FirstExample" to="." method="_on_puzzle_solved"]
-[connection signal="piece_moved" from="Slide1/FirstExample2" to="." method="_on_FirstExample_piece_moved"]
-[connection signal="puzzle_solved" from="Slide1/FirstExample2" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide2/SlidePuzzle" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide3/SlidePuzzle" to="." method="_on_puzzle_solved"]
 [connection signal="piece_moved" from="Slide4/SlidePuzzle" to="Slide4" method="_on_SlidePuzzle_piece_moved"]
 [connection signal="puzzle_solved" from="Slide4/SlidePuzzle" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide5/SlidePuzzle" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide6/SlidePuzzle" to="." method="_on_puzzle_solved"]
+[connection signal="puzzle_solved" from="Slide7/SlidePuzzle" to="." method="_on_puzzle_solved"]
