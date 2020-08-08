@@ -97,7 +97,6 @@ func _get_pieces_from_pieces_node():
 		if piece_count != goals.size():
 			_fail_and_quit("Puzzle unsolvable for "+ pieces_node.name + " pieces: "+str(pieces.size())+" goals: "+str(goals.size()))
 
-
 func _get_goals_for_piece(piece):
 	if piece.get_parent().get_parent().has_node("Goals"):
 		return piece.get_parent().get_parent().get_node("Goals").get_children()
@@ -105,12 +104,17 @@ func _get_goals_for_piece(piece):
 		return piece.get_parent().get_parent().get_parent().get_node("Goals").get_children()
 	_fail_and_quit("Piece "+piece.name+" has no goals")
 
+func _get_real_position_for(piece):
+	if piece.get_meta("is_child"):
+		return piece.get_parent().get_meta("real_position") + piece.get_meta("real_position")
+	return piece.get_meta("real_position")
+	
 func _emit_signal_when_piece_is_on_goal(piece):
 	var solved_count = 0
 	if piece.get_parent().get_parent().has_node("Goals"):
 		var goals = _get_goals_for_piece(piece)
 		for goal in goals:
-			if piece.get_meta("real_position") == goal.position:
+			if _get_real_position_for(piece) == goal.position:
 				solved_count = solved_count + 1
 				emit_signal("piece_entered_goal", piece, goal)
 		last_count = solved_count
@@ -120,7 +124,7 @@ func _is_solved(pieces: Array, goals: Array) -> bool:
 	var solved = false
 	for piece in pieces:
 		for goal in goals:
-			var piece_pos = piece.get_meta("real_position")
+			var piece_pos = _get_real_position_for(piece)
 			var goal_pos = goal.position
 			if piece_pos == goal_pos:
 				solved_count = solved_count + 1
@@ -147,12 +151,11 @@ func _position_is_occupied(piece_to_test: Sprite, pos: Vector2):
 	
 	for piece in all_pieces:
 		if piece != piece_to_test:
-			if not piece.get_meta("is_child") and piece.get_meta("real_position") == pos:
+			#the child can't be blocked by the parent
+			var piece_to_test_is_parent_of_piece = piece.get_meta("is_child") and piece.get_parent() == piece_to_test
+			if not piece_to_test_is_parent_of_piece and _get_real_position_for(piece) == pos:
 				return true
-			if piece.get_meta("is_child"):
-				if piece.get_parent() != piece_to_test:
-					if piece.get_parent().get_meta("real_position") + piece.get_meta("real_position") == pos:
-						return true
+			
 	return false
 
 func dont_allow_move(piece: Sprite, piece_path: TileMap, tile_x: int, tile_y: int) -> bool:
@@ -193,7 +196,7 @@ func _test_if_path_on_y_axis_is_clear(piece, piece_path, old_tile, new_tile) -> 
 func _test_if_destination_is_allowed(piece, destination) -> bool:
 	var new_position = pos_to_tile_pos(destination)
 	var new_tile = Vector2(new_position.x / cell_size.x, new_position.y / cell_size.y)
-	var old_position = pos_to_tile_pos(piece.get_meta("real_position"))
+	var old_position = pos_to_tile_pos(_get_real_position_for(piece))
 	var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
 	
 	if allow_tiles_script != null:
@@ -226,7 +229,7 @@ func _test_if_destination_is_allowed(piece, destination) -> bool:
 	return false
 
 func _move_sprite_to(piece, x, y):
-	piece.position = piece.get_meta("real_position")
+	piece.position = _get_real_position_for(piece)
 	piece.set_meta("real_position", Vector2(x, y))
 	#tween.stop_all()
 	tween.interpolate_property(piece, "position", piece.position, Vector2(x, y), drag_duration, Tween.TRANS_LINEAR)
@@ -235,13 +238,13 @@ func _move_sprite_to(piece, x, y):
 func move_piece_to(piece, destination):
 	var new_position = pos_to_tile_pos(destination)
 	var new_tile = Vector2(new_position.x / cell_size.x, new_position.y / cell_size.y)
-	var old_position = pos_to_tile_pos(piece.get_meta("real_position"))
+	var old_position = pos_to_tile_pos(_get_real_position_for(piece))
 	var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
 	
 	if old_tile.x != new_tile.x and old_tile.y == new_tile.y:
-		_move_sprite_to(piece, new_position.x, piece.get_meta("real_position").y)
+		_move_sprite_to(piece, new_position.x, _get_real_position_for(piece).y)
 		if "Carrier" in piece.name and piece.name in all_carried:
-			_move_sprite_to(all_carried[piece.name], new_position.x, all_carried[piece.name].get_meta("real_position").y)
+			_move_sprite_to(all_carried[piece.name], new_position.x, _get_real_position_for(all_carried[piece.name]).y)
 		else:
 			for c in all_carriers:
 				if piece.get_meta("real_position") == c.get_meta("real_position"):
@@ -251,12 +254,12 @@ func move_piece_to(piece, destination):
 			_signal_if_solved()
 	
 	if old_tile.y != new_tile.y and old_tile.x == new_tile.x:
-		_move_sprite_to(piece, piece.get_meta("real_position").x, new_position.y)
+		_move_sprite_to(piece, _get_real_position_for(piece).x, new_position.y)
 		if "Carrier" in piece.name and piece.name in all_carried:
-			_move_sprite_to(all_carried[piece.name], all_carried[piece.name].get_meta("real_position").x, new_position.y)
+			_move_sprite_to(all_carried[piece.name], _get_real_position_for(all_carried[piece.name]).x, new_position.y)
 		else:
 			for c in all_carriers:
-				if piece.get_meta("real_position") == c.get_meta("real_position"):
+				if _get_real_position_for(piece) == c.get_meta("real_position"):
 					all_carried[c.name] = piece
 					dragging = c
 		_emit_signal_when_piece_is_on_goal(piece)
@@ -279,9 +282,9 @@ func _input(event: InputEvent) -> void:
 		var closest_piece
 		var closest_piece_distance = 999999999999
 		for piece in all_pieces:
-			if click_pos.distance_squared_to(piece.get_meta("real_position")) < closest_piece_distance:
+			if click_pos.distance_squared_to(_get_real_position_for(piece)) < closest_piece_distance:
 				closest_piece = piece
-				closest_piece_distance = click_pos.distance_squared_to(piece.get_meta("real_position"))
+				closest_piece_distance = click_pos.distance_squared_to(_get_real_position_for(piece))
 		if closest_piece_distance < pow(drag_area_radius_multiplier * 2 * cell_size.x, 2):
 			dragging = closest_piece
 			return
@@ -295,7 +298,7 @@ func _input(event: InputEvent) -> void:
 			return
 		var new_position = pos_to_tile_pos(mouse_pos)
 		var new_tile = Vector2(new_position.x / cell_size.x, new_position.y / cell_size.y)
-		var old_position = pos_to_tile_pos(dragging.get_meta("real_position"))
+		var old_position = pos_to_tile_pos(_get_real_position_for(dragging))
 		var old_tile = Vector2(old_position.x / cell_size.x, old_position.y / cell_size.y)
 		
 		if new_tile == old_tile:
