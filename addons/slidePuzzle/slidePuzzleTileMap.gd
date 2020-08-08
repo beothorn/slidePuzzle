@@ -32,23 +32,19 @@ func _ready():
 		Inside Pieces put Sprites for the pieces
 		Inside Goals put Sprites for the goals""")
 	
+	_get_pieces_from_pieces_node()
+	
+	for piece in all_pieces:
+		piece.set_meta("real_position", piece.position)
+	
 	var solved_count = 0
-	for pieces_node in $Pieces.get_children():
-		if pieces_node.get_node("Pieces") == null:
-			_fail_and_quit("Inside "+pieces_node.name+" you need a node Pieces")
-		var pieces = pieces_node.get_node("Pieces").get_children()
-		if pieces_node.get_node("Goals") == null:
-			_fail_and_quit("Inside "+pieces_node.name+" you need a node Goals")
-		var goals = pieces_node.get_node("Goals").get_children()
+
+	for piece in all_pieces:
+		emit_signal("on_piece_ready", piece)
+		for goal in _get_goals_for_piece(piece):
+			if piece.get_meta("real_position") == goal.position:
+				solved_count = solved_count + 1
 		
-		if pieces.size() != goals.size():
-			_fail_and_quit("Puzzle unsolvable for "+ pieces_node.name + " pieces: "+str(pieces.size())+" goals: "+str(goals.size()))
-		for piece in pieces:
-			emit_signal("on_piece_ready", piece)
-			for goal in goals:
-				if piece.get_meta("real_position") == goal.position:
-					solved_count = solved_count + 1
-		all_pieces += pieces_node.get_node("Pieces").get_children()
 	last_count = solved_count
 	
 	if has_node("Carriers"):
@@ -56,8 +52,6 @@ func _ready():
 	else:
 		all_carriers = []
 	
-	for piece in all_pieces:
-		piece.set_meta("real_position", piece.position)
 		
 	for carrier in all_carriers:
 		carrier.set_meta("real_position", carrier.position)
@@ -74,10 +68,47 @@ func _fail_and_quit(msg: String):
 func set_as_solved() -> void:
 	emit_signal("puzzle_solved", puzzle_name)
 
+func _get_pieces_from_pieces_node():
+	for pieces_node in $Pieces.get_children():
+		
+		if pieces_node.get_node("Pieces") == null:
+			_fail_and_quit("Inside "+pieces_node.name+" you need a node Pieces")
+		if pieces_node.get_node("Goals") == null:
+			_fail_and_quit("Inside "+pieces_node.name+" you need a node Goals")
+		
+			
+		var pieces = pieces_node.get_node("Pieces").get_children()
+		var goals = pieces_node.get_node("Goals").get_children()
+		
+		var piece_count = 0
+		
+		for p in pieces_node.get_node("Pieces").get_children():
+			p.set_meta("is_parent", false)
+			p.set_meta("is_child", false)
+			all_pieces.append(p)
+			piece_count += 1
+			if p.get_child_count() > 0:
+				p.set_meta("is_parent", true)
+				piece_count += p.get_child_count()
+				for child_piece in p.get_children():
+					child_piece.set_meta("is_child", true)
+					all_pieces.append(child_piece)
+		
+		if piece_count != goals.size():
+			_fail_and_quit("Puzzle unsolvable for "+ pieces_node.name + " pieces: "+str(pieces.size())+" goals: "+str(goals.size()))
+
+
+func _get_goals_for_piece(piece):
+	if piece.get_parent().get_parent().has_node("Goals"):
+		return piece.get_parent().get_parent().get_node("Goals").get_children()
+	if piece.get_parent().get_parent().get_parent().has_node("Goals"):
+		return piece.get_parent().get_parent().get_parent().get_node("Goals").get_children()
+	_fail_and_quit("Piece "+piece.name+" has no goals")
+
 func _emit_signal_when_piece_is_on_goal(piece):
 	var solved_count = 0
-	if piece.get_parent().get_parent().get_node("Goals") != null:
-		var goals = piece.get_parent().get_parent().get_node("Goals").get_children()
+	if piece.get_parent().get_parent().has_node("Goals"):
+		var goals = _get_goals_for_piece(piece)
 		for goal in goals:
 			if piece.get_meta("real_position") == goal.position:
 				solved_count = solved_count + 1
@@ -116,8 +147,12 @@ func _position_is_occupied(piece_to_test: Sprite, pos: Vector2):
 	
 	for piece in all_pieces:
 		if piece != piece_to_test:
-			if piece.get_meta("real_position") == pos:
+			if not piece.get_meta("is_child") and piece.get_meta("real_position") == pos:
 				return true
+			if piece.get_meta("is_child"):
+				if piece.get_parent() != piece_to_test:
+					if piece.get_parent().get_meta("real_position") + piece.get_meta("real_position") == pos:
+						return true
 	return false
 
 func dont_allow_move(piece: Sprite, piece_path: TileMap, tile_x: int, tile_y: int) -> bool:
@@ -170,7 +205,8 @@ func _test_if_destination_is_allowed(piece, destination) -> bool:
 		if has_node("CarriersPath"):
 			piece_path = $CarriersPath
 	else:
-		piece_path = piece.get_parent().get_parent().get_node("Path")
+		if piece.get_parent().get_parent().has_node("Path"):
+			piece_path = piece.get_parent().get_parent().get_node("Path")
 
 	var destination_tile_is_not_allowed = dont_allow_move(piece, piece_path, new_position.x / cell_size.x, new_position.y / cell_size.y)
 	if destination_tile_is_not_allowed:
@@ -184,7 +220,7 @@ func _test_if_destination_is_allowed(piece, destination) -> bool:
 		return true
 		
 	var is_moving_over_the_y_axis = old_tile.y != new_tile.y and old_tile.x == new_tile.x
-	if is_moving_over_the_y_axis and _test_if_path_on_x_axis_is_clear(piece, piece_path, old_tile, new_tile):
+	if is_moving_over_the_y_axis and _test_if_path_on_y_axis_is_clear(piece, piece_path, old_tile, new_tile):
 		return true
 	
 	return false
