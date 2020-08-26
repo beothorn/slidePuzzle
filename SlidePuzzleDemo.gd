@@ -1,5 +1,8 @@
 extends Node2D
 
+func _ready():
+	print("Hey")
+
 func _on_puzzle_solved(puzzle_name: String) -> void:
 	$CanvasLayer/PuzzleSolved.visible = true
 	$CanvasLayer/PuzzleSolved/Player.play("Solved")
