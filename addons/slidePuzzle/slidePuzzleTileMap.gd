@@ -24,6 +24,20 @@ var all_carried: Dictionary = {}
 var last_count: int = 0
 var tween: Tween
 
+func _input(event: InputEvent) -> void:
+	var mouse_pos: Vector2 = get_global_mouse_position()
+	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
+		_on_button_down(mouse_pos)
+		return
+		
+	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and not event.pressed:
+		_on_button_release()
+		return
+		
+	if event is InputEventMouseMotion and event.button_mask & BUTTON_LEFT == BUTTON_LEFT:
+		_on_drag(mouse_pos)
+		return
+
 func _ready():
 	if $Pieces == null:
 		_fail_and_quit("""You need a node Pieces
@@ -37,10 +51,10 @@ func _ready():
 	_get_pieces_from_pieces_node()
 	
 	for piece in all_pieces:
-		_tile_set(piece, pos_to_tile_index(piece.position)) 
+		_tile_set(piece, pos_to_tile_index(piece.global_position)) 
 		
 	for goal in _all_goals():
-		_tile_set(goal, pos_to_tile_index(goal.position)) 
+		_tile_set(goal, pos_to_tile_index(goal.global_position)) 
 	
 	var solved_count = 0
 
@@ -276,20 +290,20 @@ func move_piece_to(piece, new_tile):
 func _update_on_move(piece, parameter_ignored):
 	emit_signal("piece_moved", piece, piece.get_meta("previous_tile"), _tile(piece))
 
-func _on_button_down(mouse_pos) -> void:
+func _on_button_down(mouse_pos: Vector2) -> void:
 	var click_pos: Vector2 = pos_to_tile_index(mouse_pos)
 	
 	emit_signal("clicked_tile", click_pos)
 		
-	for c in all_carriers:
-		if click_pos == _tile(c):
-			dragging = c
+	for carrier in all_carriers:
+		if click_pos == _tile(carrier):
+			dragging = carrier
 			return
 	
 	var closest_piece
 	var closest_piece_distance = 999999999999
 	for piece in all_pieces:
-		var piece_tile = _tile(piece)
+		var piece_tile:Vector2 = _tile(piece)
 		if click_pos.distance_squared_to(piece_tile) < closest_piece_distance:
 			closest_piece = piece
 			closest_piece_distance = click_pos.distance_squared_to(piece_tile)
@@ -356,6 +370,7 @@ func _on_drag(mouse_pos):
 		for p in piece_family:
 			var maybe_x =  mouse_tile.x + x_delta
 			var possible = Vector2(maybe_x, mouse_tile.y)
+			possible += _tile(p) - _tile(dragging_candidate)
 			piece_family_is_allowed = piece_family_is_allowed and _test_if_destination_is_allowed(p, possible)
 		
 		if piece_family_is_allowed:
@@ -369,6 +384,7 @@ func _on_drag(mouse_pos):
 		for p in piece_family:
 			var maybe_y = mouse_tile.y + y_delta
 			var possible = Vector2(mouse_tile.x, maybe_y)
+			possible += _tile(p) - _tile(dragging_candidate)
 			piece_family_is_allowed = piece_family_is_allowed and _test_if_destination_is_allowed(p, possible)
 		
 		if piece_family_is_allowed:
@@ -394,21 +410,6 @@ func _on_drag(mouse_pos):
 	
 	##FIND MAIN PIECE HERE to move to
 	move_piece_to(_find_main_piece(dragging), closest_possible_position)
-
-func _input(event: InputEvent) -> void:
-	var mouse_pos: Vector2 = get_global_mouse_position()
-	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
-		_on_button_down(mouse_pos)
-		return
-		
-	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and not event.pressed:
-		_on_button_release()
-		return
-		
-	if event is InputEventMouseMotion and event.button_mask & BUTTON_LEFT == BUTTON_LEFT:
-		_on_drag(mouse_pos)
-		return
-
 
 func tile_to_pos(tile: Vector2) -> Vector2: 
 	return tile * cell_size
