@@ -166,7 +166,7 @@ func _position_is_occupied(piece_to_test: Sprite, new_tile: Vector2):
 			
 	return false
 
-func dont_allow_move(piece: Sprite, piece_path: TileMap, tile: Vector2) -> bool:
+func _dont_allow_move(piece: Sprite, piece_path: TileMap, tile: Vector2) -> bool:
 	var no_piece_path = true
 	if piece_path:
 		no_piece_path = piece_path.get_cell(tile.x, tile.y) == -1
@@ -187,7 +187,7 @@ func _test_if_path_on_x_axis_is_clear(piece, piece_path, old_tile, new_tile) -> 
 		var test_position = Vector2(i , old_tile.y)
 		if _position_is_occupied(piece, test_position):
 			return false
-		if dont_allow_move(piece, piece_path, test_position):
+		if _dont_allow_move(piece, piece_path, test_position):
 			return false
 	return true
 
@@ -196,7 +196,7 @@ func _test_if_path_on_y_axis_is_clear(piece, piece_path, old_tile, new_tile) -> 
 		var test_position = Vector2(old_tile.x, i)
 		if _position_is_occupied(piece, test_position):
 			return false
-		if dont_allow_move(piece, piece_path, test_position):
+		if _dont_allow_move(piece, piece_path, test_position):
 			return false
 	return true
 
@@ -215,7 +215,7 @@ func _test_if_destination_is_allowed(piece: Sprite, new_tile: Vector2) -> bool:
 		if piece.get_parent().get_parent().has_node("Path"):
 			piece_path = piece.get_parent().get_parent().get_node("Path")
 
-	var destination_tile_is_not_allowed = dont_allow_move(piece, piece_path, new_tile)
+	var destination_tile_is_not_allowed = _dont_allow_move(piece, piece_path, new_tile)
 	if destination_tile_is_not_allowed:
 		return false
 	
