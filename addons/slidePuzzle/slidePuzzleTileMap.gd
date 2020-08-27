@@ -150,6 +150,7 @@ func _is_solved(pieces: Array, goals: Array) -> bool:
 	var solved = false
 	for piece in pieces:
 		for goal in goals:
+			print(piece.name + ": "+str(_tile(piece))+piece.name + ": "+str(_tile(piece)))
 			if _tile(piece) == _tile(goal):
 				solved_count = solved_count + 1
 	return solved_count == goals.size()
@@ -158,6 +159,8 @@ func _signal_if_solved():
 	for pieces_node in $Pieces.get_children():
 		if pieces_node:
 			var pieces = pieces_node.get_node("Pieces").get_children()
+			for piece in pieces:
+				pieces += piece.get_children()
 			var goals = pieces_node.get_node("Goals").get_children()
 			if not _is_solved(pieces, goals):
 				return
@@ -250,7 +253,7 @@ func _move_sprite_to(piece: Sprite, tile: Vector2) -> void:
 	var current_tile: Vector2 = _tile(piece)
 	piece.position = tile_to_pos(current_tile)
 	piece.set_meta("previous_tile", current_tile)
-	var delta: Vector2 = tile -current_tile
+	var delta: Vector2 = tile - current_tile
 	_tile_set(piece, tile)
 	
 	for c in piece.get_children():
