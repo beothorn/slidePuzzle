@@ -2,15 +2,13 @@ extends TileMap
 
 class_name SlidePuzzle
 
+signal clicked_piece
+signal clicked_tile
+signal piece_entered_goal
 signal on_piece_ready
 signal piece_moved
-signal piece_entered_goal
 signal puzzle_solved
-
-signal clicked_tile
-signal dragged_over_tile
-signal released_on_tile
-
+signal piece_released
 
 export(GDScript) var allow_tiles_script
 export var puzzle_name: String = "SomePuzzle"
@@ -117,6 +115,12 @@ func _tile(piece: Sprite) -> Vector2:
 func _tile_set(piece: Sprite, tile: Vector2) -> void:
 	piece.set_meta("current_tile", tile)
 	
+func _is_carrier(piece: Sprite) -> bool:
+	return "Carrier" in piece.name
+
+func _is_carriers_node(node) -> bool:
+	return "Carriers" in node.name
+
 func _emit_signal_when_piece_is_on_goal(piece):
 	var solved_count = 0
 	if piece.get_parent().get_parent().has_node("Goals"):
@@ -124,7 +128,7 @@ func _emit_signal_when_piece_is_on_goal(piece):
 		for goal in goals:
 			if _tile(piece) == _tile(goal):
 				solved_count = solved_count + 1
-				emit_signal("piece_entered_goal", piece, goal)
+				emit_signal("piece_entered_goal", piece, goal, _tile(piece))
 		last_count = solved_count
 
 func _is_solved(pieces: Array, goals: Array) -> bool:
@@ -147,7 +151,7 @@ func _signal_if_solved():
 
 func _position_is_occupied(piece_to_test: Sprite, new_tile: Vector2):
 	
-	if "Carrier" in piece_to_test.name:
+	if _is_carrier(piece_to_test):
 		for c in all_carriers:
 			if c != piece_to_test and _tile(c) == _tile(piece_to_test):
 				return true
@@ -157,9 +161,7 @@ func _position_is_occupied(piece_to_test: Sprite, new_tile: Vector2):
 	
 	for piece in all_pieces:
 		if not piece in all_pieces_in_family:
-			var a = _tile(piece)
-			var b = _tile(piece_to_test)
-			if _tile(piece) == new_tile:
+			if _tile(piece) == new_tile and not _is_carrier(piece):
 				return true
 			
 	return false
@@ -168,15 +170,14 @@ func dont_allow_move(piece: Sprite, piece_path: TileMap, tile: Vector2) -> bool:
 	var no_piece_path = true
 	if piece_path:
 		no_piece_path = piece_path.get_cell(tile.x, tile.y) == -1
-	if "Carrier" in piece.name:
+	if _is_carrier(piece):
 		return no_piece_path
 	
 	var no_free_path = get_cell(tile.x, tile.y) == -1
 	
 	var is_not_carrier = true
-	for c in all_carriers:
-		var carrier_tile = tile_pos_to_tile_index(pos_to_tile_pos(c.get_meta("current_tile")))
-		if carrier_tile == tile:
+	for carrier in all_carriers:
+		if _tile(carrier) == tile:
 			is_not_carrier = false
 	
 	return no_piece_path and no_free_path and is_not_carrier
@@ -207,7 +208,7 @@ func _test_if_destination_is_allowed(piece: Sprite, new_tile: Vector2) -> bool:
 			return false
 	
 	var piece_path: TileMap = null
-	if "Carrier" in piece.name:
+	if _is_carrier(piece):
 		if has_node("CarriersPath"):
 			piece_path = $CarriersPath
 	else:
@@ -232,8 +233,10 @@ func _test_if_destination_is_allowed(piece: Sprite, new_tile: Vector2) -> bool:
 	return false
 
 func _move_sprite_to(piece: Sprite, tile: Vector2) -> void:
-	piece.position = tile_to_pos(_tile(piece))
-	var delta: Vector2 = tile - _tile(piece)
+	var current_tile: Vector2 = _tile(piece)
+	piece.position = tile_to_pos(current_tile)
+	piece.set_meta("previous_tile", current_tile)
+	var delta: Vector2 = tile -current_tile
 	_tile_set(piece, tile)
 	
 	for c in piece.get_children():
@@ -248,7 +251,7 @@ func move_piece_to(piece, new_tile):
 	
 	if old_tile.x != new_tile.x and old_tile.y == new_tile.y:
 		_move_sprite_to(piece, Vector2(new_tile.x, _tile(piece).y))
-		if "Carrier" in piece.name and piece.name in all_carried:
+		if _is_carrier(piece) and piece.name in all_carried:
 			_move_sprite_to(all_carried[piece.name], Vector2(new_tile.x, _tile(all_carried[piece.name]).y))
 		else:
 			for c in all_carriers:
@@ -260,7 +263,7 @@ func move_piece_to(piece, new_tile):
 	
 	if old_tile.y != new_tile.y and old_tile.x == new_tile.x:
 		_move_sprite_to(piece, Vector2(_tile(piece).x, new_tile.y))
-		if "Carrier" in piece.name and piece.name in all_carried:
+		if _is_carrier(piece) and piece.name in all_carried:
 			_move_sprite_to(all_carried[piece.name], Vector2(_tile(all_carried[piece.name]).x, new_tile.y))
 		else:
 			for c in all_carriers:
@@ -270,12 +273,13 @@ func move_piece_to(piece, new_tile):
 		_emit_signal_when_piece_is_on_goal(piece)
 		_signal_if_solved()
 
-func _update_on_move(piece, path):
-	var new_tile_pos = tile_pos_to_tile_index(pos_to_tile_pos(piece.position))
-	emit_signal("piece_moved", piece, new_tile_pos)
+func _update_on_move(piece, parameter_ignored):
+	emit_signal("piece_moved", piece, piece.get_meta("previous_tile"), _tile(piece))
 
 func _on_button_down(mouse_pos) -> void:
 	var click_pos: Vector2 = pos_to_tile_index(mouse_pos)
+	
+	emit_signal("clicked_tile", click_pos)
 		
 	for c in all_carriers:
 		if click_pos == _tile(c):
@@ -291,14 +295,17 @@ func _on_button_down(mouse_pos) -> void:
 			closest_piece_distance = click_pos.distance_squared_to(piece_tile)
 	if closest_piece_distance < 2:
 		dragging = closest_piece
+		emit_signal("clicked_piece", dragging, _tile(dragging))
 
 func _on_button_release() -> void:
+	if dragging:
+		emit_signal("piece_released", dragging, _tile(dragging))
 	dragging = null
 
 func _all_related_pieces(piece: Sprite) -> Array:
 	var result: Array = piece.get_children()
 	
-	if piece.get_parent().name != "Pieces" and piece.get_parent().name != "Carriers":
+	if piece.get_parent().name != "Pieces" and not _is_carriers_node(piece.get_parent()):
 		result.append(piece.get_parent())
 		result += piece.get_parent().get_children()
 	else:
@@ -306,7 +313,7 @@ func _all_related_pieces(piece: Sprite) -> Array:
 	return result
 
 func _find_main_piece(piece: Sprite):
-	if piece.get_parent().name == "Pieces" or piece.get_parent().name == "Carriers":
+	if piece.get_parent().name == "Pieces" or _is_carriers_node(piece.get_parent()):
 		return piece
 	return piece.get_parent()
 
@@ -319,7 +326,7 @@ func _on_drag(mouse_pos):
 	if mouse_tile == _tile(dragging):
 		return
 	
-	var is_carrier = "Carrier" in dragging.name
+	var is_carrier = _is_carrier(dragging)
 	
 	var maybe_carrier
 	var dragging_candidate: Sprite = dragging

@@ -18,3 +18,23 @@ func _on_previousSlide_button_down():
 	$CanvasLayer/previousSlide.visible = new_x_position != 0
 	$Background.move(new_x_position)
 	$CanvasLayer/PuzzleSolved.visible = false
+
+
+func _on_SlidePuzzle_clicked_tile(pos):
+	print("Clicked: "+str(pos))
+
+
+func _on_SlidePuzzle_piece_entered_goal(piece, goal, tile):
+	print("On Goal: Piece "+piece.name+" on goal "+goal.name+" at "+str(tile))
+
+
+func _on_SlidePuzzle_clicked_piece(piece, tile):
+	print("Clicked: Piece "+piece.name+" at "+str(tile))
+
+
+func _on_SlidePuzzle_piece_moved(piece, tile_from, tile_to):
+	print("Moved: Piece "+piece.name+" from "+str(tile_from)+" to "+str(tile_to))
+
+
+func _on_SlidePuzzle_piece_released(piece, tile):
+	print("Released: Piece "+piece.name+" at "+str(tile))
