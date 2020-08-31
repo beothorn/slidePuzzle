@@ -1,8 +1,5 @@
 extends Node2D
 
-func _ready():
-	print("Hey")
-
 func _on_puzzle_solved(puzzle_name: String) -> void:
 	$CanvasLayer/PuzzleSolved.visible = true
 	$CanvasLayer/PuzzleSolved/Player.play("Solved")
@@ -21,15 +18,18 @@ func _on_previousSlide_button_down():
 
 
 func _on_SlidePuzzle_clicked_tile(pos):
-	print("Clicked: "+str(pos))
+	#print("Clicked: "+str(pos))
+	pass
 
 
 func _on_SlidePuzzle_piece_entered_goal(piece, goal, tile):
-	print("On Goal: Piece "+piece.name+" on goal "+goal.name+" at "+str(tile))
+	#print("On Goal: Piece "+piece.name+" on goal "+goal.name+" at "+str(tile))
+	pass
 
 
 func _on_SlidePuzzle_clicked_piece(piece, tile):
-	print("Clicked: Piece "+piece.name+" at "+str(tile))
+	#print("Clicked: Piece "+piece.name+" at "+str(tile))
+	pass
 
 
 func _on_SlidePuzzle_piece_moved(piece, tile_from, tile_to):
@@ -37,4 +37,5 @@ func _on_SlidePuzzle_piece_moved(piece, tile_from, tile_to):
 
 
 func _on_SlidePuzzle_piece_released(piece, tile):
-	print("Released: Piece "+piece.name+" at "+str(tile))
+	#print("Released: Piece "+piece.name+" at "+str(tile))
+	pass

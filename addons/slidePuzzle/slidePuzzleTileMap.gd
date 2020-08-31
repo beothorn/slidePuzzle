@@ -150,7 +150,6 @@ func _is_solved(pieces: Array, goals: Array) -> bool:
 	var solved = false
 	for piece in pieces:
 		for goal in goals:
-			print(piece.name + ": "+str(_tile(piece))+piece.name + ": "+str(_tile(piece)))
 			if _tile(piece) == _tile(goal):
 				solved_count = solved_count + 1
 	return solved_count == goals.size()
@@ -411,8 +410,10 @@ func _on_drag(mouse_pos):
 		all_carried.erase(dragging.name)
 	dragging = dragging_candidate
 	
-	##FIND MAIN PIECE HERE to move to
-	move_piece_to(_find_main_piece(dragging), closest_possible_position)
+	##FIND MAIN PIECE HERE to move by delta
+	var main_piece: Sprite = _find_main_piece(dragging)
+	var delta: Vector2 = closest_possible_position - _tile(dragging)
+	move_piece_to(main_piece, _tile(main_piece) + delta)
 
 func tile_to_pos(tile: Vector2) -> Vector2: 
 	return tile * cell_size
