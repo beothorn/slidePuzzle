@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=2]
+[gd_scene load_steps=30 format=2]
 
 [ext_resource path="res://addons/slidePuzzle/slidePuzzleTileMap.gd" type="Script" id=1]
 [ext_resource path="res://assets/SlidePuzzleTileset.tres" type="TileSet" id=2]
@@ -22,6 +22,9 @@
 [ext_resource path="res://assets/nodeStructureForCarriers.png" type="Texture" id=20]
 [ext_resource path="res://assets/bluePieceHorizontalArrow.png" type="Texture" id=21]
 [ext_resource path="res://src/allow_horizontal_move_only.gd" type="Script" id=22]
+[ext_resource path="res://assets/bluePieceJoinedRight.png" type="Texture" id=23]
+[ext_resource path="res://assets/bluePieceJoinedLeft.png" type="Texture" id=24]
+[ext_resource path="res://assets/childSpritesExample.png" type="Texture" id=25]
 
 [sub_resource type="DynamicFont" id=1]
 size = 64
@@ -102,6 +105,8 @@ margin_left = 128.0
 margin_top = 448.0
 margin_right = 896.0
 margin_bottom = 512.0
+rect_rotation = 5.1
+rect_scale = Vector2( 1e-05, 1e-05 )
 rect_pivot_offset = Vector2( 384, 32 )
 custom_fonts/font = SubResource( 1 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
@@ -623,6 +628,29 @@ tile_data = PoolIntArray( 196707, 0, 0, 196708, 0, 0, 196709, 0, 0, 196710, 0, 0
 
 [node name="Slide8" type="Node" parent="."]
 
+[node name="Slide8Text" type="RichTextLabel" parent="Slide8"]
+margin_left = 7232.0
+margin_top = 64.0
+margin_right = 8192.0
+margin_bottom = 128.0
+custom_fonts/normal_font = SubResource( 3 )
+text = "If you add sprites as a children of one piece they will also be pieces of the same type as the parent. They will be joined together and unless all of them can move dragging will be blocked."
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Slide8Text2" type="RichTextLabel" parent="Slide8"]
+margin_left = 7744.0
+margin_top = 448.0
+margin_right = 8256.0
+margin_bottom = 512.0
+custom_fonts/normal_font = SubResource( 3 )
+text = "Now go make some games!!!
+And send me a free copy :)"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="SlidePuzzle" type="TileMap" parent="Slide8"]
 tile_set = ExtResource( 2 )
 format = 1
@@ -645,13 +673,13 @@ centered = false
 [node name="BluePiece" type="Sprite" parent="Slide8/SlidePuzzle/Pieces/Blue/Pieces"]
 position = Vector2( 7296, 320 )
 z_index = 2
-texture = ExtResource( 3 )
+texture = ExtResource( 24 )
 centered = false
 
 [node name="ChildPiece" type="Sprite" parent="Slide8/SlidePuzzle/Pieces/Blue/Pieces/BluePiece"]
 position = Vector2( 64, 0 )
 z_index = 2
-texture = ExtResource( 3 )
+texture = ExtResource( 23 )
 centered = false
 
 [node name="Goals" type="Node" parent="Slide8/SlidePuzzle/Pieces/Blue"]
@@ -670,8 +698,13 @@ centered = false
 position = Vector2( 7616, 320 )
 texture = ExtResource( 4 )
 centered = false
+
+[node name="Sprite" type="Sprite" parent="Slide8"]
+position = Vector2( 7936, 320 )
+texture = ExtResource( 25 )
 [connection signal="button_down" from="CanvasLayer/nextSlide" to="." method="_on_nextSlide_button_down"]
 [connection signal="button_down" from="CanvasLayer/previousSlide" to="." method="_on_previousSlide_button_down"]
+[connection signal="tween_all_completed" from="Background/Tween" to="." method="_on_Tween_tween_all_completed"]
 [connection signal="puzzle_solved" from="Slide1/FirstExample" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide2/SlidePuzzle" to="." method="_on_puzzle_solved"]
 [connection signal="puzzle_solved" from="Slide3/SlidePuzzle" to="." method="_on_puzzle_solved"]
