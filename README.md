@@ -8,3 +8,5 @@ You can have many pieces that work on many goals or a goal for each piece.
 
 
 # [Demo/Tutorial](http://www.isageek.com.br/slidePuzzle/)
+
+https://mit-license.org/
